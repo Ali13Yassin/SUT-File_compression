@@ -25,12 +25,8 @@ def calculate_frequency(input_file):
         if not text:
             raise ValueError("Input file is empty.")
         return Counter(text)
-    except FileNotFoundError:
-        print(f"Error: File '{input_file}' not found.")
-        raise
     except Exception as e:
-        print(f"Error reading file '{input_file}': {e}")
-        raise
+        return e
 
 def build_huffman_tree(freq_table):
     """
@@ -50,8 +46,7 @@ def build_huffman_tree(freq_table):
 
         return priority_queue[0]
     except Exception as e:
-        print(f"Error building Huffman tree: {e}")
-        raise
+        return e
 
 def generate_codes(huffman_tree):
     """
@@ -70,8 +65,7 @@ def generate_codes(huffman_tree):
         generate_codes_helper(huffman_tree, "")
         return codes
     except Exception as e:
-        print(f"Error generating Huffman codes: {e}")
-        raise
+        return e
 
 def encode_file_huffman(file_path, codes):
     """
@@ -83,12 +77,8 @@ def encode_file_huffman(file_path, codes):
         if not text:
             raise ValueError("Input file is empty.")
         return ''.join(codes[char] for char in text)
-    except KeyError as e:
-        print(f"Error: Character '{e}' not in Huffman codes.")
-        raise
     except Exception as e:
-        print(f"Error encoding file '{file_path}': {e}")
-        raise
+        return e
 
 def write_compressed_file_huffman(output_path, freq_table, encoded_data):
     """
@@ -111,8 +101,7 @@ def write_compressed_file_huffman(output_path, freq_table, encoded_data):
                 byte = encoded_data[i:i + 8]
                 file.write(struct.pack('>B', int(byte, 2)))
     except Exception as e:
-        print(f"Error writing compressed file '{output_path}': {e}")
-        raise
+        return e
 
 # Huffman Decoding Functions
 def decode_huffman_data(huffman_tree, binary_data, padding):
@@ -134,8 +123,7 @@ def decode_huffman_data(huffman_tree, binary_data, padding):
 
         return ''.join(decoded_text)
     except Exception as e:
-        print(f"Error decoding Huffman data: {e}")
-        raise
+        return e
 
 def decode_file(input_file):
     """
@@ -169,12 +157,9 @@ def decode_file(input_file):
         # Write to output file
         with open(output_file, 'w', encoding='utf-8') as file:
             file.write(decoded_text)
-    except FileNotFoundError:
-        print(f"Error: Compressed file '{input_file}' not found.")
-        raise
+        return False
     except Exception as e:
-        print(f"Error decoding file '{input_file}': {e}")
-        raise
+        return e
 
 # Run-Length Encoding Functions
 def run_length_encode(input_file):
@@ -200,10 +185,9 @@ def run_length_encode(input_file):
         with open(output_file, 'w', encoding='utf-8') as file:
             file.write(''.join(encoded))
 
-        print(f"File '{input_file}' encoded into '{output_file}' using Run-Length Encoding.")
+        return False
     except Exception as e:
-        print(f"Error during Run-Length Encoding: {e}")
-        raise
+        return e
 
 def run_length_decode(input_file):
     """
@@ -230,10 +214,9 @@ def run_length_decode(input_file):
         with open(output_file, 'w', encoding='utf-8') as file:
             file.write(''.join(decoded))
 
-        print(f"File '{input_file}' decoded into '{output_file}' using Run-Length Decoding.")
+        return False
     except Exception as e:
-        print(f"Error during Run-Length Decoding: {e}")
-        raise
+        return e
 
 def huff_encoder(input_file):
     try:
@@ -243,49 +226,6 @@ def huff_encoder(input_file):
         encoded_data = encode_file_huffman(input_file, codes)
         compressed_file = os.path.join(os.path.dirname(input_file), 'Huffman compressed ' + os.path.basename(input_file))
         write_compressed_file_huffman(compressed_file, freq_table, encoded_data)
-        print(f"File '{input_file}' compressed into '{compressed_file}'.")
-        return "success"
+        return False
     except Exception as e:
-        print(f"An error occurred: {e}")
         return e
-
-# Main Program
-if __name__ == "__main__":
-    input_file = 'about-banner.jpg'  # Input text file
-    compressed_file = 'compressed_output.bin'  # Output compressed binary file
-    decompressed_file = 'decompressed_output.jpg'  # Output decompressed text file
-    rle_encoded_file = 'rle_encoded.txt'  # RLE encoded file
-    rle_decoded_file = 'rle_decoded.txt'  # RLE decoded file
-
-    try:
-        print("Choose an encoding method:")
-        print("1. Huffman Encoding")
-        print("2. Run-Length Encoding")
-        choice = input("Enter your choice (1/2): ").strip()
-
-        if choice == '1':
-            # Ensure the input file exists
-            if not os.path.exists(input_file):
-                raise FileNotFoundError(f"Input file '{input_file}' not found.")
-
-            # Huffman Encoding and Decoding
-            freq_table = calculate_frequency(input_file)
-            huffman_tree = build_huffman_tree(freq_table)
-            codes = generate_codes(huffman_tree)
-            encoded_data = encode_file_huffman(input_file, codes)
-            write_compressed_file_huffman(compressed_file, freq_table, encoded_data)
-            print(f"File '{input_file}' compressed into '{compressed_file}'.")
-
-            decode_file(compressed_file, decompressed_file)
-            print(f"File '{compressed_file}' decompressed into '{decompressed_file}'.")
-
-        elif choice == '2':
-            # Run-Length Encoding and Decoding
-            run_length_encode(input_file)
-            run_length_decode(rle_encoded_file)
-
-        else:
-            print("Invalid choice. Please enter 1 or 2.")
-
-    except Exception as e:
-        print(f"An error occurred: {e}")

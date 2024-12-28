@@ -63,7 +63,7 @@ def mainmenu():
     main_frame.grid(row=1, column=0, sticky="nsew")
     Label(navbar, text="File compression project", style="Title.TLabel").grid(row=0, column=0)
     Button(navbar, text="Compress", command=compress_menu, style="navbutton.TLabel").grid(row=0, column=1, padx=10, pady=10)
-    Button(navbar, text="Decompress", command=compress_menu, style="navbutton.TLabel").grid(row=0, column=2, padx=10, pady=10)
+    Button(navbar, text="Decompress", command=decompress_menu, style="navbutton.TLabel").grid(row=0, column=2, padx=10, pady=10)
     Button(navbar, text="About", command=settings_menu, style="navbutton.TLabel").grid(row=0, column=3, padx=10, pady=10)
     compress_menu() #Starts the server menu
 
@@ -71,13 +71,13 @@ def mainmenu():
 #------------------------------------<Menus Start>-------------------------------------------------------
 def compress_menu():
     clear() #Clears the previous menu
-    server_back = Frame(main_frame, style="Custom2.TFrame")
-    server_back.pack(expand=True)
+    compress_back = Frame(main_frame, style="Custom2.TFrame")
+    compress_back.pack(expand=True)
 
-    Label(server_back, text="Choose text file", style="Title.TLabel").grid(row=0, column=0)
-    Label(server_back, text="Any text based file ex(.txt .html .css) works!", style="Title.TLabel").grid(row=1, column=0)
+    Label(compress_back, text="Choose text file", style="Title.TLabel").grid(row=0, column=0)
+    Label(compress_back, text="Any text based file ex(.txt .html .css) works!", style="Title.TLabel").grid(row=1, column=0)
     
-    upload_frame = Frame(server_back, style="Custom2.TFrame")
+    upload_frame = Frame(compress_back, style="Custom2.TFrame")
     upload_frame.grid(row=2, column=0)
     style.configure("server_off_button.TLabel", background="#A5622F", foreground="white", font=(fnt, 20, "bold"), padding=(10, 10))  # Change the font of the text
     style.map("server_off_button.TLabel",foreground=[('pressed', '#391D0D'), ('active', 'white')],background=[('pressed', '!disabled', '#FFE7D4'), ('active', '#E99A5D')])
@@ -92,21 +92,80 @@ def compress_menu():
     File_name_label = Label(upload_frame, text="No file uploaded", style="Title.TLabel")
     File_name_label.grid(row=0, column=1)
 
-    Label(server_back, text="Select compression/encoding type", style="Title.TLabel").grid(row=0, column=0)
+    Label(compress_back, text="Select Compression/Encoding type", style="Title.TLabel").grid(row=0, column=0)
     compression_method = StringVar(value="huff")
     style.configure("TRadiobutton", background="#6F3F29", foreground="white", font=(fnt, 12))
-    Radiobutton(server_back, text="Huffman", variable=compression_method, value="huff", style="TRadiobutton").grid(row=4, column=0, padx=10, pady=5)
-    Radiobutton(server_back, text="Run-Length", variable=compression_method, value="run-length", style="TRadiobutton").grid(row=5, column=0, padx=10, pady=5)
+    Radiobutton(compress_back, text="Huffman", variable=compression_method, value="huff", style="TRadiobutton").grid(row=4, column=0, padx=10, pady=5)
+    Radiobutton(compress_back, text="Run-Length", variable=compression_method, value="run-length", style="TRadiobutton").grid(row=5, column=0, padx=10, pady=5)
     
     def compress_button():
         if file_path:
             if compression_method.get() == "huff":
-                backend.huff_encoder(file_path)
+                result = backend.huff_encoder(file_path)
+                if result:
+                    messagebox.showinfo("Error", "File compression Failed!\n{}".format(result))
+                else:
+                    output_file = os.path.join('Huffman compressed ' + os.path.basename(file_path))
+                    messagebox.showinfo("Success", 'File compressed successfully!\nSaved as "{}"'.format(output_file))
             elif compression_method.get() == "run-length":
-                backend.run_length_encode(file_path)
+                result = backend.run_length_encode(file_path)
+                if result:
+                    messagebox.showinfo("Error", "File compression Failed!\n{}".format(result))
+                else:
+                    output_file = os.path.join('run-length compressed ' + os.path.basename(file_path))
+                    messagebox.showinfo("Success", 'File compressed successfully!\nSaved as "{}"'.format(output_file))
 
-    Button(server_back, text="Compress", command=compress_button, style="server_off_button.TLabel").grid(row=6, column=0)
+    Button(compress_back, text="Compress", command=compress_button, style="server_off_button.TLabel").grid(row=6, column=0)
 
+def decompress_menu():
+    clear() #Clears the previous menu
+    decode_back = Frame(main_frame, style="Custom2.TFrame")
+    decode_back.pack(expand=True)
+
+    Label(decode_back, text="Choose text file", style="Title.TLabel").grid(row=0, column=0)
+    Label(decode_back, text="Any text based file ex(.txt .html .css) works!", style="Title.TLabel").grid(row=1, column=0)
+    
+    upload_frame = Frame(decode_back, style="Custom2.TFrame")
+    upload_frame.grid(row=2, column=0)
+    style.configure("server_off_button.TLabel", background="#A5622F", foreground="white", font=(fnt, 20, "bold"), padding=(10, 10))  # Change the font of the text
+    style.map("server_off_button.TLabel",foreground=[('pressed', '#391D0D'), ('active', 'white')],background=[('pressed', '!disabled', '#FFE7D4'), ('active', '#E99A5D')])
+    
+    def uploader():
+                global file_path
+                file_path = askopenfilename()
+                if file_path:
+                    File_name_label.config(text=os.path.basename(file_path))
+
+    Button(upload_frame, text="Upload", command=uploader, style="server_off_button.TLabel").grid(row=0, column=0)
+    File_name_label = Label(upload_frame, text="No file uploaded", style="Title.TLabel")
+    File_name_label.grid(row=0, column=1)
+
+    Label(decode_back, text="Select Decompression/Decoding type", style="Title.TLabel").grid(row=0, column=0)
+    compression_method = StringVar(value="huff")
+    style.configure("TRadiobutton", background="#6F3F29", foreground="white", font=(fnt, 12))
+    Radiobutton(decode_back, text="Huffman", variable=compression_method, value="huff", style="TRadiobutton").grid(row=4, column=0, padx=10, pady=5)
+    Radiobutton(decode_back, text="Run-Length", variable=compression_method, value="run-length", style="TRadiobutton").grid(row=5, column=0, padx=10, pady=5)
+    
+    def decompress_button():
+        if file_path:
+            if compression_method.get() == "huff":
+                result = backend.decode_file(file_path)
+                if result:
+                    messagebox.showinfo("Error", "File decompression Failed!\n{}".format(result))
+                else:
+                    output_file = os.path.join('Huffman decompressed ' + os.path.basename(file_path))
+                    messagebox.showinfo("Success", 'File decompressed successfully!\nSaved as "{}"'.format(output_file))
+                    
+            elif compression_method.get() == "run-length":
+                result = backend.run_length_decode(file_path)
+                if result:
+                    messagebox.showinfo("Error", "File decompression Failed!\n{}".format(result))
+                else:
+                    output_file = os.path.join('run-length decompressed ' + os.path.basename(file_path))
+                    messagebox.showinfo("Success", 'File decompressed successfully!\nSaved as "{}"'.format(output_file))
+            
+
+    Button(decode_back, text="Decompress", command=decompress_button, style="server_off_button.TLabel").grid(row=6, column=0)
 
 
 def view_files_menu(action):

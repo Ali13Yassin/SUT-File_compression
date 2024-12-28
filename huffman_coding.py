@@ -118,9 +118,9 @@ def decode_file(input_file, output_file):
 
 # Main Program
 if __name__ == "__main__":
-    input_file = 'se.txt'  # Input file to compress
+    input_file = 'about-banner.jpg'  # Input file to compress
     compressed_file = 'compressed_output.bin'  # Compressed output file
-    decompressed_file = 'decompressed_output.txt'  # Decompressed output file
+    decompressed_file = 'decompressed_output.jpg'  # Decompressed output file
 
     # Encoding
     freq_table = calculate_frequency(input_file)
